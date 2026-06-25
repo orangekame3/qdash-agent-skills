@@ -8,24 +8,29 @@ This repository is intended to host reusable instructions and scripts for coding
 
 - `qdash-api`: query a running QDash instance through `qdash-client` profiles and the QDash OpenAPI. The current package is in Codex skill format, while its helper script and API policy are agent-agnostic. It covers chips, metrics, task results, issues, flows, executions, project files, projects, and provenance read paths.
 
-## Example Prompts
+## Effective Prompts
 
-Use `$qdash-api` when asking Codex to inspect a running QDash instance:
+Ask from the QDash side. Include the profile, target chip or entity, time range, and the summary shape you want. Add "read-only" when inspecting project files, git state, flows, or executions.
+
+Good prompt shape:
 
 ```text
-Use $qdash-api to list chips from my local QDash profile.
-Use $qdash-api to show the default chip and summarize its current metrics.
-Use $qdash-api with profile anemone to list the latest 20 task results.
-Use $qdash-api to find recent failed task results for chip-001.
-Use $qdash-api to show the latest t1 values by qubit.
-Use $qdash-api to fetch t1 history for Q00 on 20260625.
-Use $qdash-api to list open issues and group them by task.
-Use $qdash-api to inspect approved issue knowledge entries for readout tasks.
-Use $qdash-api to list flows available in the current project.
-Use $qdash-api to show recent executions for the default chip.
-Use $qdash-api to inspect the project file tree without modifying files.
-Use $qdash-api to summarize provenance stats and recent parameter changes.
-Use $qdash-api to check which local qdash-client profiles are available, without printing secrets.
+Use $qdash-api. In profile <profile>, inspect <QDash target> for <chip/entity/time range>. Summarize <what to compare or flag>. Do not modify anything.
+```
+
+Examples:
+
+```text
+Use $qdash-api. Check which qdash-client profiles exist and do not print secrets.
+Use $qdash-api. In profile anemone, summarize the default chip metrics and flag weak qubits.
+Use $qdash-api. In profile anemone, show the latest 20 failed task results for chip-001 and group them by task name.
+Use $qdash-api. For chip-001, compare recent t1 values by qubit and call out outliers.
+Use $qdash-api. Fetch t1 history for Q00 on 20260625 and summarize the trend.
+Use $qdash-api. List open QDash issues, group them by task, and mention linked task IDs.
+Use $qdash-api. Inspect approved issue knowledge for readout tasks and summarize reusable fixes.
+Use $qdash-api. Read-only: list QDash flows and recent executions for the default chip.
+Use $qdash-api. Read-only: inspect the QDash project file tree and git status.
+Use $qdash-api. Summarize provenance stats and recent parameter changes from the last 24 hours.
 ```
 
 ## Runtime Policy
