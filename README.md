@@ -24,8 +24,8 @@ Examples:
 
 ```text
 Use $qdash. Check which qdash-client profiles exist and do not print secrets.
-Use $qdash. In profile anemone, summarize the default chip metrics and flag weak qubits.
-Use $qdash. In profile anemone, show the latest 20 failed task results for chip-001 and group them by task name.
+Use $qdash. In profile <profile>, summarize the default chip metrics and flag weak qubits.
+Use $qdash. In profile <profile>, show the latest 20 failed task results for chip-001 and group them by task name.
 Use $qdash. For chip-001, compare recent t1 values by qubit and call out outliers.
 Use $qdash. Fetch t1 history for Q00 on 20260625 and summarize the trend.
 Use $qdash. List open QDash issues, group them by task, and mention linked task IDs.
