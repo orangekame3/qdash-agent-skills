@@ -88,6 +88,20 @@ def parse_params(raw: str | None) -> dict[str, Any] | None:
     return parsed
 
 
+def add_if_present(params: dict[str, Any], key: str, value: Any) -> None:
+    if value is not None:
+        params[key] = value
+
+
+def parse_bool(value: str) -> bool:
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "y", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "n", "off"}:
+        return False
+    raise argparse.ArgumentTypeError(f"expected boolean value, got {value!r}")
+
+
 def load_client(args: argparse.Namespace) -> Any:
     QDashClient, QDashConfig = import_client_types()
     if args.env:
@@ -95,6 +109,15 @@ def load_client(args: argparse.Namespace) -> Any:
     if args.config:
         return QDashClient.from_profile(args.profile, path=args.config)
     return QDashClient.from_profile(args.profile)
+
+
+def client_get(args: argparse.Namespace, path: str, params: dict[str, Any] | None = None) -> None:
+    client = load_client(args)
+    try:
+        response = client._request("GET", path, params=params)  # noqa: SLF001
+        print_json({"status_code": response.status_code, "data": response.data})
+    finally:
+        client.close()
 
 
 def command_config_path(args: argparse.Namespace) -> None:
@@ -160,12 +183,164 @@ def command_timeseries(args: argparse.Namespace) -> None:
 
 
 def command_raw_get(args: argparse.Namespace) -> None:
+    client_get(args, args.path, parse_params(args.params))
+
+
+def command_task_results(args: argparse.Namespace) -> None:
+    params: dict[str, Any] = {"skip": args.skip, "limit": args.limit}
+    for key in (
+        "status",
+        "chip_id",
+        "task_name",
+        "qid",
+        "execution_id",
+        "username",
+        "start_from",
+        "start_to",
+        "message_contains",
+    ):
+        add_if_present(params, key, getattr(args, key))
+    client_get(args, "/task-results", params)
+
+
+def command_qubit_latest(args: argparse.Namespace) -> None:
     client = load_client(args)
     try:
-        response = client._request("GET", args.path, params=parse_params(args.params))  # noqa: SLF001
+        chip_id = args.chip_id or client.get_default_chip_id()
+        response = client._request(  # noqa: SLF001
+            "GET",
+            "/task-results/qubits/latest",
+            params={"chip_id": chip_id, "task": args.task},
+        )
         print_json({"status_code": response.status_code, "data": response.data})
     finally:
         client.close()
+
+
+def command_qubit_history(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        chip_id = args.chip_id or client.get_default_chip_id()
+        response = client._request(  # noqa: SLF001
+            "GET",
+            f"/task-results/qubits/{args.qid}/history",
+            params={"chip_id": chip_id, "task": args.task, "date": args.date},
+        )
+        print_json({"status_code": response.status_code, "data": response.data})
+    finally:
+        client.close()
+
+
+def command_coupling_latest(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        chip_id = args.chip_id or client.get_default_chip_id()
+        response = client._request(  # noqa: SLF001
+            "GET",
+            "/task-results/couplings/latest",
+            params={"chip_id": chip_id, "task": args.task},
+        )
+        print_json({"status_code": response.status_code, "data": response.data})
+    finally:
+        client.close()
+
+
+def command_coupling_history(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        chip_id = args.chip_id or client.get_default_chip_id()
+        response = client._request(  # noqa: SLF001
+            "GET",
+            f"/task-results/couplings/{args.coupling_id}/history",
+            params={"chip_id": chip_id, "task": args.task, "date": args.date},
+        )
+        print_json({"status_code": response.status_code, "data": response.data})
+    finally:
+        client.close()
+
+
+def command_projects(args: argparse.Namespace) -> None:
+    client_get(args, "/projects")
+
+
+def command_project(args: argparse.Namespace) -> None:
+    client_get(args, f"/projects/{args.project_id}")
+
+
+def command_files_tree(args: argparse.Namespace) -> None:
+    client_get(args, "/files/tree")
+
+
+def command_git_status(args: argparse.Namespace) -> None:
+    client_get(args, "/files/git/status")
+
+
+def command_issues(args: argparse.Namespace) -> None:
+    params: dict[str, Any] = {"skip": args.skip, "limit": args.limit}
+    add_if_present(params, "task_id", args.task_id)
+    add_if_present(params, "is_closed", args.is_closed)
+    client_get(args, "/issues", params)
+
+
+def command_issue_knowledge(args: argparse.Namespace) -> None:
+    params: dict[str, Any] = {"skip": args.skip, "limit": args.limit}
+    add_if_present(params, "status", args.status)
+    add_if_present(params, "task_name", args.task_name)
+    client_get(args, "/issue-knowledge", params)
+
+
+def command_flows(args: argparse.Namespace) -> None:
+    client_get(args, "/flows")
+
+
+def command_flow(args: argparse.Namespace) -> None:
+    client_get(args, f"/flows/{args.name}")
+
+
+def command_executions(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        chip_id = args.chip_id or client.get_default_chip_id()
+        response = client._request(  # noqa: SLF001
+            "GET",
+            "/executions",
+            params={"chip_id": chip_id, "skip": args.skip, "limit": args.limit},
+        )
+        print_json({"status_code": response.status_code, "data": response.data})
+    finally:
+        client.close()
+
+
+def command_provenance_stats(args: argparse.Namespace) -> None:
+    client_get(args, "/provenance/stats")
+
+
+def command_provenance_history(args: argparse.Namespace) -> None:
+    params = {
+        "parameter_name": args.parameter_name,
+        "qid": args.qid,
+        "limit": args.limit,
+    }
+    client_get(args, "/provenance/history", params)
+
+
+def command_provenance_changes(args: argparse.Namespace) -> None:
+    params: dict[str, Any] = {"limit": args.limit, "within_hours": args.within_hours}
+    if args.parameter_name:
+        params["parameter_names"] = args.parameter_name
+    client_get(args, "/provenance/changes", params)
+
+
+def command_provenance_entity(args: argparse.Namespace) -> None:
+    client_get(args, f"/provenance/entities/{args.entity_id}")
+
+
+def command_provenance_lineage(args: argparse.Namespace) -> None:
+    client_get(args, f"/provenance/lineage/{args.entity_id}")
+
+
+def command_provenance_impact(args: argparse.Namespace) -> None:
+    client_get(args, f"/provenance/impact/{args.entity_id}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -205,6 +380,119 @@ def build_parser() -> argparse.ArgumentParser:
     raw_get.add_argument("--path", required=True)
     raw_get.add_argument("--params", help="JSON object of query parameters")
     raw_get.set_defaults(func=command_raw_get)
+
+    task_results = sub.add_parser("task-results", help="List task results with common filters")
+    task_results.add_argument("--status")
+    task_results.add_argument("--chip-id")
+    task_results.add_argument("--task-name")
+    task_results.add_argument("--qid")
+    task_results.add_argument("--execution-id")
+    task_results.add_argument("--username")
+    task_results.add_argument("--start-from", help="Inclusive lower bound, ISO datetime")
+    task_results.add_argument("--start-to", help="Inclusive upper bound, ISO datetime")
+    task_results.add_argument("--message-contains")
+    task_results.add_argument("--skip", type=int, default=0)
+    task_results.add_argument("--limit", type=int, default=50)
+    task_results.set_defaults(func=command_task_results)
+
+    qubit_latest = sub.add_parser("qubit-latest", help="Latest task result values by qubit")
+    qubit_latest.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
+    qubit_latest.add_argument("--task", required=True)
+    qubit_latest.set_defaults(func=command_qubit_latest)
+
+    qubit_history = sub.add_parser("qubit-history", help="Historical task result values for a qubit")
+    qubit_history.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
+    qubit_history.add_argument("--qid", required=True)
+    qubit_history.add_argument("--task", required=True)
+    qubit_history.add_argument("--date", required=True, help="Date in YYYYMMDD format")
+    qubit_history.set_defaults(func=command_qubit_history)
+
+    coupling_latest = sub.add_parser("coupling-latest", help="Latest task result values by coupling")
+    coupling_latest.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
+    coupling_latest.add_argument("--task", required=True)
+    coupling_latest.set_defaults(func=command_coupling_latest)
+
+    coupling_history = sub.add_parser(
+        "coupling-history", help="Historical task result values for a coupling"
+    )
+    coupling_history.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
+    coupling_history.add_argument("--coupling-id", required=True)
+    coupling_history.add_argument("--task", required=True)
+    coupling_history.add_argument("--date", required=True, help="Date in YYYYMMDD format")
+    coupling_history.set_defaults(func=command_coupling_history)
+
+    projects = sub.add_parser("projects", help="List projects visible to the profile")
+    projects.set_defaults(func=command_projects)
+
+    project = sub.add_parser("project", help="Show one project")
+    project.add_argument("--project-id", required=True)
+    project.set_defaults(func=command_project)
+
+    files_tree = sub.add_parser("files-tree", help="Show project file tree")
+    files_tree.set_defaults(func=command_files_tree)
+
+    git_status = sub.add_parser("git-status", help="Show project git status")
+    git_status.set_defaults(func=command_git_status)
+
+    issues = sub.add_parser("issues", help="List issues")
+    issues.add_argument("--skip", type=int, default=0)
+    issues.add_argument("--limit", type=int, default=50)
+    issues.add_argument("--task-id")
+    issues.add_argument("--is-closed", type=parse_bool)
+    issues.set_defaults(func=command_issues)
+
+    issue_knowledge = sub.add_parser("issue-knowledge", help="List issue knowledge entries")
+    issue_knowledge.add_argument("--skip", type=int, default=0)
+    issue_knowledge.add_argument("--limit", type=int, default=50)
+    issue_knowledge.add_argument("--status", choices=["draft", "approved", "rejected"])
+    issue_knowledge.add_argument("--task-name")
+    issue_knowledge.set_defaults(func=command_issue_knowledge)
+
+    flows = sub.add_parser("flows", help="List flows")
+    flows.set_defaults(func=command_flows)
+
+    flow = sub.add_parser("flow", help="Show one flow definition")
+    flow.add_argument("--name", required=True)
+    flow.set_defaults(func=command_flow)
+
+    executions = sub.add_parser("executions", help="List executions for a chip")
+    executions.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
+    executions.add_argument("--skip", type=int, default=0)
+    executions.add_argument("--limit", type=int, default=20)
+    executions.set_defaults(func=command_executions)
+
+    provenance_stats = sub.add_parser("provenance-stats", help="Show provenance statistics")
+    provenance_stats.set_defaults(func=command_provenance_stats)
+
+    provenance_history = sub.add_parser(
+        "provenance-history", help="Show provenance history for a parameter and entity"
+    )
+    provenance_history.add_argument("--parameter-name", required=True)
+    provenance_history.add_argument("--qid", required=True)
+    provenance_history.add_argument("--limit", type=int, default=50)
+    provenance_history.set_defaults(func=command_provenance_history)
+
+    provenance_changes = sub.add_parser("provenance-changes", help="Show recent provenance changes")
+    provenance_changes.add_argument("--limit", type=int, default=20)
+    provenance_changes.add_argument("--within-hours", type=int, default=24)
+    provenance_changes.add_argument(
+        "--parameter-name",
+        action="append",
+        help="Filter by parameter name; repeat for multiple values",
+    )
+    provenance_changes.set_defaults(func=command_provenance_changes)
+
+    provenance_entity = sub.add_parser("provenance-entity", help="Show one provenance entity")
+    provenance_entity.add_argument("--entity-id", required=True)
+    provenance_entity.set_defaults(func=command_provenance_entity)
+
+    provenance_lineage = sub.add_parser("provenance-lineage", help="Show lineage for an entity")
+    provenance_lineage.add_argument("--entity-id", required=True)
+    provenance_lineage.set_defaults(func=command_provenance_lineage)
+
+    provenance_impact = sub.add_parser("provenance-impact", help="Show impact for an entity")
+    provenance_impact.add_argument("--entity-id", required=True)
+    provenance_impact.set_defaults(func=command_provenance_impact)
 
     return parser
 

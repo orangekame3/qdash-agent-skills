@@ -31,6 +31,21 @@ uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile loc
 uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local metrics-config
 uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local chip-metrics --chip-id chip-001
 uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local timeseries --parameter t1 --qid Q00 --start-at 2026-06-01T00:00:00Z --end-at 2026-06-08T00:00:00Z
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local task-results --limit 20 --status success --chip-id chip-001
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local qubit-latest --task t1 --chip-id chip-001
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local qubit-history --qid Q00 --task t1 --date 20260625
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local coupling-latest --task cz_error_rate
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local coupling-history --coupling-id Q00-Q01 --task cz_error_rate --date 20260625
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local projects
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local files-tree
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local git-status
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local issues --limit 20 --is-closed false
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local issue-knowledge --status approved --limit 20
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local flows
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local executions --limit 20
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local provenance-stats
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local provenance-history --parameter-name t1 --qid Q00 --limit 20
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local provenance-changes --within-hours 24 --parameter-name t1
 uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local raw-get --path /projects
 uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local raw-get --path /task-results --params '{"limit": 20}'
 ```
@@ -61,6 +76,8 @@ Useful path groups from the OpenAPI spec:
 - `/projects`, `/provenance/*`, `/issues`, `/issue-knowledge`, `/forum/posts`
 - `/flows/*`, `/executions/*`, `/files/*`, `/admin/*`
 
+Named helper commands cover common read-only paths. Use `raw-get` only for read-only endpoints that are not yet first-class commands. Treat these as operationally sensitive even if the HTTP method is GET: `/files/git/pull`, `/files/git/push`, `/flows/{name}/execute`, `/executions/{id}/re-execute`, `/task-results/{id}/exclude`, admin endpoints, auth endpoints, and membership changes.
+
 Use `jq` to inspect methods and parameters:
 
 ```bash
@@ -71,3 +88,11 @@ jq -r '.paths | keys[]' ~/src/github.com/oqtopus-team/qdash/docs/oas/openapi.jso
 ## Extending the Helper
 
 Prefer adding a named command to `scripts/qdash_query.py` when an operation is likely to be reused. Keep commands read-only by default and implemented through `qdash-client`. For write operations, require an explicit flag such as `--confirm-write` and make the calling agent ask the user first.
+
+When adding a read-only command:
+
+- Reuse `client_get()` when the command maps directly to one GET endpoint.
+- Default `--chip-id` to `get_default_chip_id()` only when the endpoint requires a chip and that behavior is useful for dashboards.
+- Keep pagination options explicit as `--skip` and `--limit`.
+- Accept ISO datetimes for API date-time fields and `YYYYMMDD` for task-result history date fields.
+- Return JSON with `status_code` and `data` for raw endpoint wrappers; return model JSON for high-level `qdash-client` methods.

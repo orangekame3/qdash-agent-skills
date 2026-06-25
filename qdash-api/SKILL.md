@@ -1,6 +1,6 @@
 ---
 name: qdash-api
-description: Work with a running QDash instance through qdash-client and saved local profiles. Use when an agent needs to inspect chips, metrics, task results, calibration data, provenance, project-scoped QDash API data, or OpenAPI endpoints from QDash using qdash-client, ~/.config/qdash/config.ini, XDG_CONFIG_HOME/qdash/config.ini, QDASH_* environment variables, or a local oqtopus-team/qdash checkout.
+description: Work with a running QDash instance through qdash-client and saved local profiles. Use when an agent needs to inspect chips, metrics, task results, calibration data, provenance, issues, flows, executions, project files, project-scoped QDash API data, or OpenAPI endpoints from QDash using qdash-client, ~/.config/qdash/config.ini, XDG_CONFIG_HOME/qdash/config.ini, QDASH_* environment variables, or a local oqtopus-team/qdash checkout.
 ---
 
 # QDash API
@@ -31,6 +31,12 @@ uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile loc
 uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local default-chip
 uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local metrics-config
 uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local chip-metrics --chip-id chip-001
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local task-results --limit 20 --status success
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local qubit-latest --task t1
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local issues --limit 20
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local flows
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local files-tree
+uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local provenance-stats
 uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local timeseries --parameter t1 --start-at 2026-06-01T00:00:00Z --end-at 2026-06-08T00:00:00Z
 ```
 
@@ -45,11 +51,12 @@ uv run --with httpx --with pydantic python qdash-api/scripts/qdash_query.py --pr
 ## Workflow
 
 1. Use `config-path` first when the user mentions a local profile. Report only the path, available profile names, and whether the file exists.
-2. Prefer `uv run --with qdash-client python qdash-api/scripts/qdash_query.py ...` for supported read-only operations because it handles profile loading, auth headers, model serialization, and error formatting through the official client.
-3. Use `raw-get` for read-only endpoints not covered by first-class commands. It still goes through `qdash-client`; do not use `curl` as the normal path.
-4. Use a local checkout fallback only for qdash-client development or unreleased API/client changes.
-5. Before creating, updating, deleting, excluding, re-executing, pushing files, or triggering flows, state the exact endpoint/action and wait for user confirmation.
-6. Summarize returned data instead of dumping huge JSON. Include counts, IDs, time ranges, and suspicious values that answer the user's question.
+2. Prefer `uv run --with qdash-client python qdash-api/scripts/qdash_query.py ...` for supported read-only operations because it handles profile loading, auth headers, project headers, model serialization, and error formatting through the official client.
+3. Use named read-only commands first: `chips`, `default-chip`, `metrics-config`, `chip-metrics`, `timeseries`, `task-results`, `qubit-latest`, `qubit-history`, `coupling-latest`, `coupling-history`, `projects`, `project`, `files-tree`, `git-status`, `issues`, `issue-knowledge`, `flows`, `flow`, `executions`, and `provenance-*`.
+4. Use `raw-get` for read-only endpoints not covered by first-class commands. It still goes through `qdash-client`; do not use `curl` as the normal path.
+5. Use a local checkout fallback only for qdash-client development or unreleased API/client changes.
+6. Before creating, updating, deleting, excluding, re-executing, pushing files, pulling files, or triggering flows, state the exact endpoint/action and wait for user confirmation.
+7. Summarize returned data instead of dumping huge JSON. Include counts, IDs, time ranges, and suspicious values that answer the user's question.
 
 ## API Reference
 
