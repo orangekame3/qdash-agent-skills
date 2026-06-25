@@ -1,0 +1,4 @@
+interface:
+  display_name: "QDash API"
+  short_description: "Query QDash through saved client profiles"
+  default_prompt: "Use $qdash-api to inspect QDash data through my local qdash-client profile."
