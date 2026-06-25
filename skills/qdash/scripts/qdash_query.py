@@ -56,7 +56,7 @@ def import_client_types() -> tuple[Any, Any]:
         raise SystemExit(
             f"Could not import qdash.client dependency '{missing}'. Install qdash-client, "
             "or run with: uv run --with qdash-client python "
-            "qdash-api/scripts/qdash_query.py ..."
+            "skills/qdash/scripts/qdash_query.py ..."
         ) from exc
     except Exception as exc:  # noqa: BLE001
         raise SystemExit(

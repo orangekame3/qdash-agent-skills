@@ -1,4 +1,4 @@
-# QDash API Notes
+# QDash Notes
 
 Use this reference when a QDash request is outside the helper's common commands or when you need to extend the helper.
 
@@ -26,34 +26,34 @@ Do not display secret values. If debugging config, report whether a key is prese
 ## Common Read-Only Commands
 
 ```bash
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local chips
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local default-chip
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local metrics-config
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local chip-metrics --chip-id chip-001
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local timeseries --parameter t1 --qid Q00 --start-at 2026-06-01T00:00:00Z --end-at 2026-06-08T00:00:00Z
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local task-results --limit 20 --status success --chip-id chip-001
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local qubit-latest --task t1 --chip-id chip-001
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local qubit-history --qid Q00 --task t1 --date 20260625
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local coupling-latest --task cz_error_rate
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local coupling-history --coupling-id Q00-Q01 --task cz_error_rate --date 20260625
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local projects
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local files-tree
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local git-status
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local issues --limit 20 --is-closed false
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local issue-knowledge --status approved --limit 20
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local flows
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local executions --limit 20
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local provenance-stats
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local provenance-history --parameter-name t1 --qid Q00 --limit 20
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local provenance-changes --within-hours 24 --parameter-name t1
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local raw-get --path /projects
-uv run --with qdash-client python qdash-api/scripts/qdash_query.py --profile local raw-get --path /task-results --params '{"limit": 20}'
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local chips
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local default-chip
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local metrics-config
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local chip-metrics --chip-id chip-001
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local timeseries --parameter t1 --qid Q00 --start-at 2026-06-01T00:00:00Z --end-at 2026-06-08T00:00:00Z
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-results --limit 20 --status success --chip-id chip-001
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local qubit-latest --task t1 --chip-id chip-001
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local qubit-history --qid Q00 --task t1 --date 20260625
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local coupling-latest --task cz_error_rate
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local coupling-history --coupling-id Q00-Q01 --task cz_error_rate --date 20260625
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local projects
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local files-tree
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local git-status
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local issues --limit 20 --is-closed false
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local issue-knowledge --status approved --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local flows
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local executions --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local provenance-stats
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local provenance-history --parameter-name t1 --qid Q00 --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local provenance-changes --within-hours 24 --parameter-name t1
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local raw-get --path /projects
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local raw-get --path /task-results --params '{"limit": 20}'
 ```
 
 For local qdash-client development, set `QDASH_REPO_PATH` to a checkout and run with client dependencies:
 
 ```bash
-QDASH_REPO_PATH=~/src/github.com/oqtopus-team/qdash uv run --with httpx --with pydantic python qdash-api/scripts/qdash_query.py --profile local chips
+QDASH_REPO_PATH=~/src/github.com/oqtopus-team/qdash uv run --with httpx --with pydantic python skills/qdash/scripts/qdash_query.py --profile local chips
 ```
 
 Do not use `curl` as the default transport. Use it only for explicit low-level debugging after the user asks for it; otherwise rely on `qdash-client` for profile loading, auth headers, Cloudflare Access headers, project headers, retries, and response normalization.
