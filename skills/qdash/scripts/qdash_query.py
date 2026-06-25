@@ -164,6 +164,49 @@ def command_chip_metrics(args: argparse.Namespace) -> None:
         client.close()
 
 
+def command_chip_qubits(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        chip_id = args.chip_id or client.get_default_chip_id()
+        print_json(
+            client.list_chip_qubits(
+                chip_id,
+                qids=args.qid,
+                offset=args.offset,
+                limit=args.limit,
+            )
+        )
+    finally:
+        client.close()
+
+
+def command_chip_qubit(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        chip_id = args.chip_id or client.get_default_chip_id()
+        print_json(client.get_chip_qubit(chip_id, args.qid))
+    finally:
+        client.close()
+
+
+def command_chip_couplings(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        chip_id = args.chip_id or client.get_default_chip_id()
+        print_json(client.list_chip_couplings(chip_id, offset=args.offset, limit=args.limit))
+    finally:
+        client.close()
+
+
+def command_chip_coupling(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        chip_id = args.chip_id or client.get_default_chip_id()
+        print_json(client.get_chip_coupling(chip_id, args.coupling_id))
+    finally:
+        client.close()
+
+
 def command_timeseries(args: argparse.Namespace) -> None:
     client = load_client(args)
     try:
@@ -271,8 +314,59 @@ def command_files_tree(args: argparse.Namespace) -> None:
     client_get(args, "/files/tree")
 
 
+def command_file_content(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(client.get_file_content(args.path))
+    finally:
+        client.close()
+
+
 def command_git_status(args: argparse.Namespace) -> None:
     client_get(args, "/files/git/status")
+
+
+def command_task_result(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(client.get_task_result(args.task_id))
+    finally:
+        client.close()
+
+
+def command_task_note(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(client.get_task_note(args.task_id))
+    finally:
+        client.close()
+
+
+def command_task_result_issues(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(client.list_task_result_issues(args.task_id))
+    finally:
+        client.close()
+
+
+def command_task_knowledge(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        if args.task_name:
+            print_json(client.get_task_knowledge(args.task_name))
+        else:
+            print_json(client.list_task_knowledge())
+    finally:
+        client.close()
+
+
+def command_task_knowledge_markdown(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print(client.get_task_knowledge_markdown(args.task_name))
+    finally:
+        client.close()
 
 
 def command_issues(args: argparse.Namespace) -> None:
@@ -297,6 +391,38 @@ def command_flow(args: argparse.Namespace) -> None:
     client_get(args, f"/flows/{args.name}")
 
 
+def command_flow_templates(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(client.list_flow_templates())
+    finally:
+        client.close()
+
+
+def command_flow_template(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(client.get_flow_template(args.template_id))
+    finally:
+        client.close()
+
+
+def command_flow_helper_files(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(client.list_flow_helper_files())
+    finally:
+        client.close()
+
+
+def command_flow_helper_file(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print(client.get_flow_helper_file(args.filename))
+    finally:
+        client.close()
+
+
 def command_executions(args: argparse.Namespace) -> None:
     client = load_client(args)
     try:
@@ -307,6 +433,47 @@ def command_executions(args: argparse.Namespace) -> None:
             params={"chip_id": chip_id, "skip": args.skip, "limit": args.limit},
         )
         print_json({"status_code": response.status_code, "data": response.data})
+    finally:
+        client.close()
+
+
+def command_ai_reviews(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(
+            client.list_task_result_ai_reviews(
+                chip_id=args.chip_id,
+                task_name=args.task_name,
+                status=args.status,
+                decision=args.decision,
+                latest_only=args.latest_only,
+                skip=args.skip,
+                limit=args.limit,
+            )
+        )
+    finally:
+        client.close()
+
+
+def command_ai_review_runs(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(
+            client.list_task_result_ai_review_runs(
+                chip_id=args.chip_id,
+                task_name=args.task_name,
+                skip=args.skip,
+                limit=args.limit,
+            )
+        )
+    finally:
+        client.close()
+
+
+def command_ai_review_run(args: argparse.Namespace) -> None:
+    client = load_client(args)
+    try:
+        print_json(client.get_task_result_ai_review_run(args.review_run_id))
     finally:
         client.close()
 
@@ -366,6 +533,29 @@ def build_parser() -> argparse.ArgumentParser:
     chip_metrics = sub.add_parser("chip-metrics", help="Show dashboard metrics for a chip")
     chip_metrics.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
     chip_metrics.set_defaults(func=command_chip_metrics)
+
+    chip_qubits = sub.add_parser("chip-qubits", help="List qubits for a chip")
+    chip_qubits.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
+    chip_qubits.add_argument("--qid", action="append", help="Filter by qubit ID; repeatable")
+    chip_qubits.add_argument("--offset", type=int, default=0)
+    chip_qubits.add_argument("--limit", type=int, default=50)
+    chip_qubits.set_defaults(func=command_chip_qubits)
+
+    chip_qubit = sub.add_parser("chip-qubit", help="Show one qubit for a chip")
+    chip_qubit.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
+    chip_qubit.add_argument("--qid", required=True)
+    chip_qubit.set_defaults(func=command_chip_qubit)
+
+    chip_couplings = sub.add_parser("chip-couplings", help="List couplings for a chip")
+    chip_couplings.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
+    chip_couplings.add_argument("--offset", type=int, default=0)
+    chip_couplings.add_argument("--limit", type=int, default=100)
+    chip_couplings.set_defaults(func=command_chip_couplings)
+
+    chip_coupling = sub.add_parser("chip-coupling", help="Show one coupling for a chip")
+    chip_coupling.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
+    chip_coupling.add_argument("--coupling-id", required=True)
+    chip_coupling.set_defaults(func=command_chip_coupling)
 
     timeseries = sub.add_parser("timeseries", help="Show task result time-series data")
     timeseries.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
@@ -431,8 +621,38 @@ def build_parser() -> argparse.ArgumentParser:
     files_tree = sub.add_parser("files-tree", help="Show project file tree")
     files_tree.set_defaults(func=command_files_tree)
 
+    file_content = sub.add_parser("file-content", help="Show one project file's content")
+    file_content.add_argument("--path", required=True)
+    file_content.set_defaults(func=command_file_content)
+
     git_status = sub.add_parser("git-status", help="Show project git status")
     git_status.set_defaults(func=command_git_status)
+
+    task_result = sub.add_parser("task-result", help="Show one task result by task ID")
+    task_result.add_argument("--task-id", required=True)
+    task_result.set_defaults(func=command_task_result)
+
+    task_note = sub.add_parser("task-note", help="Show one task result note")
+    task_note.add_argument("--task-id", required=True)
+    task_note.set_defaults(func=command_task_note)
+
+    task_result_issues = sub.add_parser(
+        "task-result-issues", help="List issues attached to a task result"
+    )
+    task_result_issues.add_argument("--task-id", required=True)
+    task_result_issues.set_defaults(func=command_task_result_issues)
+
+    task_knowledge = sub.add_parser(
+        "task-knowledge", help="List task knowledge, or show one entry with --task-name"
+    )
+    task_knowledge.add_argument("--task-name")
+    task_knowledge.set_defaults(func=command_task_knowledge)
+
+    task_knowledge_markdown = sub.add_parser(
+        "task-knowledge-markdown", help="Show one task knowledge entry as markdown"
+    )
+    task_knowledge_markdown.add_argument("--task-name", required=True)
+    task_knowledge_markdown.set_defaults(func=command_task_knowledge_markdown)
 
     issues = sub.add_parser("issues", help="List issues")
     issues.add_argument("--skip", type=int, default=0)
@@ -455,11 +675,46 @@ def build_parser() -> argparse.ArgumentParser:
     flow.add_argument("--name", required=True)
     flow.set_defaults(func=command_flow)
 
+    flow_templates = sub.add_parser("flow-templates", help="List flow templates")
+    flow_templates.set_defaults(func=command_flow_templates)
+
+    flow_template = sub.add_parser("flow-template", help="Show one flow template with code")
+    flow_template.add_argument("--template-id", required=True)
+    flow_template.set_defaults(func=command_flow_template)
+
+    flow_helper_files = sub.add_parser("flow-helper-files", help="List flow helper files")
+    flow_helper_files.set_defaults(func=command_flow_helper_files)
+
+    flow_helper_file = sub.add_parser("flow-helper-file", help="Show one flow helper file")
+    flow_helper_file.add_argument("--filename", required=True)
+    flow_helper_file.set_defaults(func=command_flow_helper_file)
+
     executions = sub.add_parser("executions", help="List executions for a chip")
     executions.add_argument("--chip-id", help="Defaults to get_default_chip_id()")
     executions.add_argument("--skip", type=int, default=0)
     executions.add_argument("--limit", type=int, default=20)
     executions.set_defaults(func=command_executions)
+
+    ai_reviews = sub.add_parser("ai-reviews", help="List task result AI reviews")
+    ai_reviews.add_argument("--chip-id")
+    ai_reviews.add_argument("--task-name")
+    ai_reviews.add_argument("--status")
+    ai_reviews.add_argument("--decision")
+    ai_reviews.add_argument("--latest-only", action="store_true")
+    ai_reviews.add_argument("--skip", type=int, default=0)
+    ai_reviews.add_argument("--limit", type=int, default=50)
+    ai_reviews.set_defaults(func=command_ai_reviews)
+
+    ai_review_runs = sub.add_parser("ai-review-runs", help="List AI review runs")
+    ai_review_runs.add_argument("--chip-id")
+    ai_review_runs.add_argument("--task-name")
+    ai_review_runs.add_argument("--skip", type=int, default=0)
+    ai_review_runs.add_argument("--limit", type=int, default=50)
+    ai_review_runs.set_defaults(func=command_ai_review_runs)
+
+    ai_review_run = sub.add_parser("ai-review-run", help="Show one AI review run")
+    ai_review_run.add_argument("--review-run-id", required=True)
+    ai_review_run.set_defaults(func=command_ai_review_run)
 
     provenance_stats = sub.add_parser("provenance-stats", help="Show provenance statistics")
     provenance_stats.set_defaults(func=command_provenance_stats)

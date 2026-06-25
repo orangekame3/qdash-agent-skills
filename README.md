@@ -6,7 +6,7 @@ This repository is intended to host reusable instructions and scripts for coding
 
 ## Skills
 
-- `qdash`: query a running QDash instance through `qdash-client` profiles and the QDash OpenAPI. The current package is in Codex skill format, while its helper script and API policy are agent-agnostic. It covers chips, metrics, task results, issues, flows, executions, project files, projects, and provenance read paths.
+- `qdash`: query a running QDash instance through `qdash-client` profiles and the QDash OpenAPI. The current package is in Codex skill format, while its helper script and API policy are agent-agnostic. It covers chips, chip topology, metrics, task results, task knowledge, AI reviews, issues, flows, executions, project files, projects, and provenance read paths.
 
 Skills live under `skills/*/SKILL.md` so `gh skill install` can discover them directly from this repository.
 
@@ -41,8 +41,12 @@ The public/default path is `qdash-client`, preferably through ephemeral `uv` exe
 
 ```bash
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local chips
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local chip-qubits --limit 20
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-results --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-knowledge --task-name t1
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local issues --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local flow-templates
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local ai-reviews --limit 20
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local provenance-stats
 ```
 
