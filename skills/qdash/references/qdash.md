@@ -30,19 +30,37 @@ uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile 
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local default-chip
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local metrics-config
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local chip-metrics --chip-id chip-001
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local chip-qubits --chip-id chip-001 --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local chip-qubit --chip-id chip-001 --qid Q00
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local chip-couplings --chip-id chip-001 --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local chip-coupling --chip-id chip-001 --coupling-id Q00-Q01
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local timeseries --parameter t1 --qid Q00 --start-at 2026-06-01T00:00:00Z --end-at 2026-06-08T00:00:00Z
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-results --limit 20 --status success --chip-id chip-001
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-result --task-id task-001
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-note --task-id task-001
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-result-issues --task-id task-001
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-knowledge
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-knowledge --task-name t1
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local task-knowledge-markdown --task-name t1
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local qubit-latest --task t1 --chip-id chip-001
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local qubit-history --qid Q00 --task t1 --date 20260625
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local coupling-latest --task cz_error_rate
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local coupling-history --coupling-id Q00-Q01 --task cz_error_rate --date 20260625
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local projects
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local files-tree
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local file-content --path flows/demo.py
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local git-status
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local issues --limit 20 --is-closed false
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local issue-knowledge --status approved --limit 20
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local flows
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local flow-templates
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local flow-template --template-id full_calibration
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local flow-helper-files
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local flow-helper-file --filename common.py
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local executions --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local ai-reviews --chip-id chip-001 --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local ai-review-runs --chip-id chip-001 --limit 20
+uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local ai-review-run --review-run-id run-001
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local provenance-stats
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local provenance-history --parameter-name t1 --qid Q00 --limit 20
 uv run --with qdash-client python skills/qdash/scripts/qdash_query.py --profile local provenance-changes --within-hours 24 --parameter-name t1
@@ -72,9 +90,10 @@ Useful path groups from the OpenAPI spec:
 
 - `/chips`, `/chips/{chip_id}`, `/chips/{chip_id}/qubits`, `/chips/{chip_id}/couplings`
 - `/metrics/config`, `/metrics/chips/{chip_id}/metrics`, `/metrics/chips/{chip_id}/qubits/{qid}/history`
-- `/task-results`, `/task-results/timeseries`, `/task-results/qubits/latest`, `/task-results/couplings/latest`
+- `/task-results`, `/tasks/{task_id}/result`, `/task-results/{task_id}/note`, `/task-results/{task_id}/issues`, `/task-results/timeseries`, `/task-results/qubits/latest`, `/task-results/couplings/latest`, `/task-results/ai-review`
+- `/tasks`, `/task-knowledge`, `/tasks/{task_name}/knowledge`, `/tasks/{task_name}/knowledge/markdown`
 - `/projects`, `/provenance/*`, `/issues`, `/issue-knowledge`, `/forum/posts`
-- `/flows/*`, `/executions/*`, `/files/*`, `/admin/*`
+- `/flows/*`, `/flows/templates`, `/flows/helpers`, `/executions/*`, `/files/*`, `/admin/*`
 
 Named helper commands cover common read-only paths. Use `raw-get` only for read-only endpoints that are not yet first-class commands. Treat these as operationally sensitive even if the HTTP method is GET: `/files/git/pull`, `/files/git/push`, `/flows/{name}/execute`, `/executions/{id}/re-execute`, `/task-results/{id}/exclude`, admin endpoints, auth endpoints, and membership changes.
 
