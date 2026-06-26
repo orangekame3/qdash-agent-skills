@@ -65,6 +65,7 @@ Install with the npm wrapper:
 
 ```bash
 npx qdash-agent-skills install
+npx qdash-agent-skills update
 npx qdash-agent-skills doctor
 ```
 
@@ -88,6 +89,7 @@ During npm-package development, run the wrapper directly:
 ```bash
 node bin/qdash-agent-skills.js path
 node bin/qdash-agent-skills.js install --dry-run
+node bin/qdash-agent-skills.js update --dry-run
 node bin/qdash-agent-skills.js doctor
 ```
 
