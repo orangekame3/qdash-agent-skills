@@ -15,11 +15,12 @@ function usage() {
 
 Commands:
   install       Install the qdash skill into Codex's user skill directory
+  update        Replace the installed qdash skill with this package's copy
   doctor        Check local skill, qdash config, and runtime prerequisites
   path          Print source and default install paths
   help          Show this help
 
-Install options:
+Install/update options:
   --target DIR  Install into DIR instead of the default Codex skill path
   --force       Replace an existing installed qdash skill
   --dry-run     Show what would happen without copying files
@@ -201,6 +202,8 @@ function main() {
     usage();
   } else if (options.command === "install") {
     commandInstall(options);
+  } else if (options.command === "update") {
+    commandInstall({ ...options, force: true });
   } else if (options.command === "doctor") {
     commandDoctor(options);
   } else if (options.command === "path") {

@@ -12,7 +12,7 @@
     "README.md"
   ],
   "scripts": {
-    "check": "node --check bin/qdash-agent-skills.js && node bin/qdash-agent-skills.js path && node bin/qdash-agent-skills.js doctor"
+    "check": "node --check bin/qdash-agent-skills.js && node bin/qdash-agent-skills.js path && node bin/qdash-agent-skills.js install --dry-run && node bin/qdash-agent-skills.js update --dry-run && node bin/qdash-agent-skills.js doctor"
   },
   "engines": {
     "node": ">=18"
