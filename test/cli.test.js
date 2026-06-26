@@ -37,7 +37,8 @@ test("path prints source and CODEX_HOME-derived install paths", () => {
   const output = runCli(["path"], { env: { CODEX_HOME: codexHome } });
 
   assert.match(output, /source: .*skills\/qdash/);
-  assert.match(output, new RegExp(`default_install: ${codexHome}/skills/qdash`));
+  assert.match(output, new RegExp(`user_install: ${codexHome}/skills/qdash`));
+  assert.match(output, new RegExp(`project_install: ${repoRoot}/.codex/skills/qdash`));
   assert.match(output, new RegExp(`codex_home: ${codexHome}`));
 });
 
@@ -46,10 +47,41 @@ test("install copies the bundled qdash skill into a target directory", () => {
 
   const output = runCli(["install", "--target", target]);
 
+  assert.match(output, /scope: custom/);
   assert.match(output, /status: installed/);
   assert.equal(fs.existsSync(path.join(target, "SKILL.md")), true);
   assert.equal(fs.existsSync(path.join(target, "scripts", "qdash_query.py")), true);
   assert.equal(fs.existsSync(path.join(target, "references", "qdash.md")), true);
+});
+
+test("install supports project scope", () => {
+  const projectDir = makeTempDir();
+  const target = path.join(projectDir, ".codex", "skills", "qdash");
+
+  const output = runCli(["install", "--scope", "project", "--project-dir", projectDir]);
+
+  assert.match(output, /scope: project/);
+  assert.match(output, new RegExp(`target: ${target}`));
+  assert.equal(fs.existsSync(path.join(target, "SKILL.md")), true);
+});
+
+test("target overrides project scope", () => {
+  const projectDir = makeTempDir();
+  const target = path.join(makeTempDir(), "custom", "qdash");
+
+  const output = runCli(["install", "--scope", "project", "--project-dir", projectDir, "--target", target]);
+
+  assert.match(output, /scope: custom/);
+  assert.match(output, new RegExp(`target: ${target}`));
+  assert.equal(fs.existsSync(path.join(target, "SKILL.md")), true);
+  assert.equal(fs.existsSync(path.join(projectDir, ".codex", "skills", "qdash")), false);
+});
+
+test("install rejects invalid scope", () => {
+  const result = spawnCli(["install", "--scope", "workspace", "--dry-run"]);
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Invalid --scope value: workspace/);
 });
 
 test("install refuses to overwrite without force", () => {

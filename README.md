@@ -69,8 +69,20 @@ npx qdash-agent-skills update
 npx qdash-agent-skills doctor
 ```
 
-The wrapper copies `skills/qdash` into the Codex user skill directory and checks local
-prerequisites without printing secrets. The Python helper remains the QDash API runtime.
+The wrapper copies `skills/qdash` into the Codex user skill directory by default and
+checks local prerequisites without printing secrets. The Python helper remains the
+QDash API runtime.
+
+For a project-local Codex skill install, use project scope:
+
+```bash
+npx qdash-agent-skills install --scope project
+npx qdash-agent-skills update --scope project
+npx qdash-agent-skills install --scope project --project-dir /path/to/project
+```
+
+Use `--target` when you need an explicit destination; it takes precedence over
+`--scope` and `--project-dir`.
 
 Install the `qdash` skill with GitHub CLI:
 
