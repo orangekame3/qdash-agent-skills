@@ -61,6 +61,16 @@ Do not make `curl` the normal transport. These skills rely on `qdash-client` for
 
 ## Install
 
+Install with the npm wrapper:
+
+```bash
+npx qdash-agent-skills install
+npx qdash-agent-skills doctor
+```
+
+The wrapper copies `skills/qdash` into the Codex user skill directory and checks local
+prerequisites without printing secrets. The Python helper remains the QDash API runtime.
+
 Install the `qdash` skill with GitHub CLI:
 
 ```bash
@@ -71,6 +81,14 @@ For project-local installation, use `--scope project`. During local development,
 
 ```bash
 gh skill install . qdash --from-local --agent codex --scope user --force
+```
+
+During npm-package development, run the wrapper directly:
+
+```bash
+node bin/qdash-agent-skills.js path
+node bin/qdash-agent-skills.js install --dry-run
+node bin/qdash-agent-skills.js doctor
 ```
 
 ## Other Agents

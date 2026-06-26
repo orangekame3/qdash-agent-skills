@@ -1,0 +1,20 @@
+{
+  "name": "qdash-agent-skills",
+  "version": "0.1.0",
+  "description": "Agent skills and helper scripts for working with QDash through qdash-client.",
+  "license": "Apache-2.0",
+  "bin": {
+    "qdash-agent-skills": "bin/qdash-agent-skills.js"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    "README.md"
+  ],
+  "scripts": {
+    "check": "node --check bin/qdash-agent-skills.js && node bin/qdash-agent-skills.js path && node bin/qdash-agent-skills.js doctor"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
