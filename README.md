@@ -93,6 +93,17 @@ node bin/qdash-agent-skills.js update --dry-run
 node bin/qdash-agent-skills.js doctor
 ```
 
+## Release
+
+The npm package publishes from GitHub Actions when a `v*` tag is pushed, or when
+the publish workflow is run manually. Configure the repository secret `NPM_TOKEN`
+with an npm automation token before publishing.
+
+```bash
+npm version patch
+git push origin main --tags
+```
+
 ## Other Agents
 
 For Claude Code or other agents, reuse the same runtime policy and helper scripts. The core entry point is:
