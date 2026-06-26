@@ -3,6 +3,21 @@
   "version": "0.1.0",
   "description": "Agent skills and helper scripts for working with QDash through qdash-client.",
   "license": "Apache-2.0",
+  "homepage": "https://github.com/orangekame3/qdash-agent-skills#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orangekame3/qdash-agent-skills.git"
+  },
+  "bugs": {
+    "url": "https://github.com/orangekame3/qdash-agent-skills/issues"
+  },
+  "keywords": [
+    "codex",
+    "skills",
+    "agent",
+    "qdash",
+    "qdash-client"
+  ],
   "bin": {
     "qdash-agent-skills": "bin/qdash-agent-skills.js"
   },
@@ -13,6 +28,10 @@
   ],
   "scripts": {
     "check": "node --check bin/qdash-agent-skills.js && node bin/qdash-agent-skills.js path && node bin/qdash-agent-skills.js install --dry-run && node bin/qdash-agent-skills.js update --dry-run && node bin/qdash-agent-skills.js doctor"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "engines": {
     "node": ">=18"
