@@ -22,6 +22,9 @@ Commands:
 
 Install/update options:
   --target DIR  Install into DIR instead of the default Codex skill path
+  --scope SCOPE Install scope: user or project (default: user)
+  --project-dir DIR
+                Project directory used with --scope project (default: cwd)
   --force       Replace an existing installed qdash skill
   --dry-run     Show what would happen without copying files
 
@@ -35,6 +38,8 @@ function parseArgs(argv) {
     command: argv[2] || "help",
     target: null,
     config: null,
+    scope: "user",
+    projectDir: null,
     force: false,
     dryRun: false,
   };
@@ -50,6 +55,16 @@ function parseArgs(argv) {
       options.target = argv[index];
     } else if (arg.startsWith("--target=")) {
       options.target = arg.slice("--target=".length);
+    } else if (arg === "--scope") {
+      index += 1;
+      options.scope = argv[index];
+    } else if (arg.startsWith("--scope=")) {
+      options.scope = arg.slice("--scope=".length);
+    } else if (arg === "--project-dir") {
+      index += 1;
+      options.projectDir = argv[index];
+    } else if (arg.startsWith("--project-dir=")) {
+      options.projectDir = arg.slice("--project-dir=".length);
     } else if (arg === "--config") {
       index += 1;
       options.config = argv[index];
@@ -62,12 +77,32 @@ function parseArgs(argv) {
   return options;
 }
 
+function validateOptions(options) {
+  if (!["user", "project"].includes(options.scope)) {
+    throw new Error(`Invalid --scope value: ${options.scope}. Expected user or project.`);
+  }
+}
+
 function defaultCodexHome() {
   return process.env.CODEX_HOME || path.join(os.homedir(), ".codex");
 }
 
 function defaultInstallDir() {
   return path.join(defaultCodexHome(), "skills", skillName);
+}
+
+function projectSkillDir(projectDir) {
+  return path.join(path.resolve(projectDir || process.cwd()), ".codex", "skills", skillName);
+}
+
+function resolveInstallDir(options) {
+  if (options.target) {
+    return path.resolve(options.target);
+  }
+  if (options.scope === "project") {
+    return projectSkillDir(options.projectDir);
+  }
+  return defaultInstallDir();
 }
 
 function defaultConfigPath() {
@@ -98,9 +133,10 @@ function copyRecursive(source, destination) {
 
 function commandInstall(options) {
   ensureSkillSource();
-  const target = path.resolve(options.target || defaultInstallDir());
+  const target = resolveInstallDir(options);
   console.log(`source: ${sourceSkillDir}`);
   console.log(`target: ${target}`);
+  console.log(`scope: ${options.target ? "custom" : options.scope}`);
 
   if (fs.existsSync(target)) {
     if (!options.force) {
@@ -162,13 +198,15 @@ function commandDoctor(options) {
   ensureSkillSource();
   const configPath = path.resolve(options.config || defaultConfigPath());
   const installDir = defaultInstallDir();
+  const projectInstallDir = projectSkillDir(options.projectDir);
   const profiles = readProfiles(configPath);
   const python = commandExists("python3") ? "python3" : commandExists("python") ? "python" : null;
 
   const checks = [
     ["skill_source", fs.existsSync(path.join(sourceSkillDir, "SKILL.md"))],
     ["skill_script", fs.existsSync(path.join(sourceSkillDir, "scripts", "qdash_query.py"))],
-    ["default_install_exists", fs.existsSync(path.join(installDir, "SKILL.md"))],
+    ["user_install_exists", fs.existsSync(path.join(installDir, "SKILL.md"))],
+    ["project_install_exists", fs.existsSync(path.join(projectInstallDir, "SKILL.md"))],
     ["uv_available", commandExists("uv")],
     ["python_available", python !== null],
     ["qdash_client_importable", python ? checkPythonImport(python) : false],
@@ -179,7 +217,8 @@ function commandDoctor(options) {
     console.log(`${ok ? "ok" : "warn"}: ${name}`);
   }
   console.log(`source: ${sourceSkillDir}`);
-  console.log(`default_install: ${installDir}`);
+  console.log(`user_install: ${installDir}`);
+  console.log(`project_install: ${projectInstallDir}`);
   console.log(`config: ${configPath}`);
   console.log(`profiles: ${profiles.length ? profiles.join(", ") : "(none)"}`);
   if (python && !checkPythonImport(python)) {
@@ -192,12 +231,14 @@ function commandDoctor(options) {
 function commandPath() {
   ensureSkillSource();
   console.log(`source: ${sourceSkillDir}`);
-  console.log(`default_install: ${defaultInstallDir()}`);
+  console.log(`user_install: ${defaultInstallDir()}`);
+  console.log(`project_install: ${projectSkillDir(process.cwd())}`);
   console.log(`codex_home: ${defaultCodexHome()}`);
 }
 
 function main() {
   const options = parseArgs(process.argv);
+  validateOptions(options);
   if (options.command === "help" || options.command === "--help" || options.command === "-h") {
     usage();
   } else if (options.command === "install") {
